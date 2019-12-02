@@ -1,0 +1,6 @@
+ / Priority Algorithm /
+0 | IDLE | 0 | X | 1 | p2 | 1 | X | 2 | p2 | 2 | X | 3 | p2 | 3 | X | 4 | p2 | 4 | X | 5 | p4 | 5 | X | 6 | p3 | 6 | X | 7 | p3 | 7 | X | 8 | p3 | 8 | X | 9 | p3 | 9 | X | 10 | p3 | 10 | X | 11 | p3 | 11 | X | 12 | p0 | 12 | X | 13 | p0 | 13 | X | 14 | p0 | 14 | X | 15 | p0 | 15 | X | 16 | p0 | 16 | X | 17 | p0 | 17 | X | 18 | p0 | 18 | X | 19 | p0 | 19 | X | 20 | p0 | 20 | X | 21 | p0 | 21 | X | 22 | p1 | 22 | X | 23 | p1 | 23 | X | 24 | p1 | 24 | X | 25 | p5 | 25 | X | 26 | p5 | 26 | X | 27 | p5 | 27 | X | 28 | p5 | 28 | X |  | END |
+Tiempo de Inicio: 1.0
+Tiempo esperado de ejecución: 28.0
+Tiempo en ejecucion: 28
+----- END OF ALGORITHM -----

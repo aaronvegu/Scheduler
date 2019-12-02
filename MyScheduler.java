@@ -22,7 +22,8 @@ public class MyScheduler {
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
     //fcfs(1, 1);
-    sjf(1,1);
+    //sjf(1,1);
+    priority(1,1);
    }
 
   private void leerDatos() throws Exception { 
@@ -198,7 +199,7 @@ public class MyScheduler {
     float tiempoInicio = primerProceso.getArrival(); // Y como la cola esta ordenada segun llegada del proceso, el arrival del primer proceso en cola sera el tiempo de inicio de ejecucion
 
     // Declaracion de variables a usar en el core del algoritmo
-    int st = 0, pt = 0, pf = 0, indice = 0; // Starting Time, Procesos Totales y Procesos Finalizados
+    int st = 0, pt = 0, pf = 0; // Starting Time, Procesos Totales y Procesos Finalizados
 
 
     pt = actual.size(); // Obtenemos el numero total de procesos en cola
@@ -262,7 +263,103 @@ public class MyScheduler {
     pw.close();
   }
 
+  // Priority Algorithm
+  private void priority(int cola, int procesadores) throws Exception {
 
+    // Excepciones
+    if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
+      
+    if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
+    
+    cola_actual = cola;
+
+    Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+    ordenarVector(actual);
+    String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_priority.txt";
+    File f = new File(ruta);
+    FileWriter fw = new FileWriter(f);
+    PrintWriter pw = new PrintWriter(fw);
+
+    System.out.println("q" + cola_actual + ":");
+    float tiempo_actual = 0f;
+    float ejecucionTotal = 0f;
+
+    for(int i = 0; i < actual.size(); i++) {
+      Proceso p = (Proceso) actual.elementAt(i);
+      ejecucionTotal = ejecucionTotal + p.getRequired();
+      System.out.println(p.toString());
+    }
+
+    // Obtencion del tiempo de inicio de ejecucion
+    Proceso primerProceso = (Proceso) actual.elementAt(0); // Obtenemos el primer proceso de la cola
+    float tiempoInicio = primerProceso.getArrival(); // Y como la cola esta ordenada segun llegada del proceso, el arrival del primer proceso en cola sera el tiempo de inicio de ejecucion
+
+    // Declaracion de variables a usar en el core del algoritmo
+    int st = 0, pt = 0, pf = 0; // Starting Time, Procesos Totales y Procesos Finalizados
+
+
+    pt = actual.size(); // Obtenemos el numero total de procesos en cola
+    
+    pw.println(" / Priority Algorithm /");
+
+
+    while(true) {
+
+      int indicador = pt; // El indicador se iguala al numero de procesos de la cola
+      int min = 999; // Y el valor minimo actual es un numero grande, para que el primer proceso en entrar sea siempre el que tiene mayor prioridad
+
+      if (pf == pt) // Si procesos finalizados = procesos totales, romper el ciclo
+        break;
+
+      for (int i = 0; i < actual.size(); i++) { // Recorremos la cola de procesos
+
+        Proceso procesoActual = (Proceso) actual.elementAt(i); // Obtenemos el proceso actual de la cola
+
+        if ((procesoActual.getArrival() <= st) && (procesoActual.getRequired() > 0) && (procesoActual.getPriority() < min)) {
+          min = (int) procesoActual.getPriority(); // La mayor prioridad ahora es la prioridad del proceso que logro entrar
+          indicador = i; // Al guardar el index del proceso que entro en la condicion en el indicador, estamos indicando que proceso debe ser ejecutado
+        }
+
+      }
+
+      if (indicador == pt) { // Si el indicador es igual a pt, significa que no entro ningun proceso, por lo tanto marcamos un IDLE y aumentamos el tiempo
+
+        pw.print(st + " | IDLE | "); // Indicamos el IDLE en cpu
+        st += context_change;
+        pw.print(st + " | X | ");
+        st++; // Aumentamos el tiempo
+
+      } else { // De tener proceso a ejecutar, pasamos a su ejecucion:
+
+        Proceso procesoARecorrer = (Proceso) actual.elementAt(indicador); // Se instancia el proceso a recorrer
+
+        while(procesoARecorrer.getRequired() > 0) { // Mientras el proceso aun tenga recursos por ejecutar:
+          //int tiempoContexto = st + context_change;
+          pw.print(st + " | " + procesoARecorrer.getID() + " | "); // Imprimos la ejecucion
+          st += context_change;
+          pw.print(st + " | X | "); // Imprimimos el cambio de contexto
+          procesoARecorrer.run(quantum); // Hacemos la ejecucion del proceso
+          st++;
+        }
+
+        pf++; // Indicamos la finalizacion del proceso
+
+      }
+         
+    }
+
+    pw.println(" | END |");
+
+    pw.println("Tiempo de Inicio: " + tiempoInicio);
+    pw.println("Tiempo esperado de ejecución: " + (ejecucionTotal + (context_change * (ejecucionTotal))));
+    pw.println("Tiempo en ejecucion: " + (st - 1));
+    pw.println("----- END OF ALGORITHM -----");
+          
+    fw.close();
+    pw.close();
+
+
+  }
  
   
   public void ordenarVector(Vector actual) {
