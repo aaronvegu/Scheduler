@@ -1,4 +1,4 @@
- / SJF Algorithm /
+ / SJF NA Algorithm /
  
  == Ready Queue: ==
 q1:

@@ -22,11 +22,10 @@ public class MyScheduler {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    fcfs(1, 1);
+    //fcfs(1, 1);
     //sjf(1,1);
     //priority(1,1);
-    //rr(1,1);
-    //crearColaUnica(3);
+    rr(2,1);
    }
 
   private void leerDatos() throws Exception { 
@@ -216,16 +215,38 @@ public class MyScheduler {
   	  
     if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
   	
-    cola_actual = cola;
+      // Analizamos si debemos trabajar multicolas o se ingreso solo una cola
+     if (cola > 1) {
 
-  	Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
-    ordenarVector(actual);
-    String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_sjf.txt";
+       vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
+       vectorUnico = crearColaUnica(cola); // Guardamos el vector unico recibido del metodo
+
+       actual = vectorUnico; // Guardamos el vectorUnico en el Vector actual
+       ordenarVector(actual); // Se ordena el Vector que contiene la cola
+       cola_actual = 1;
+       ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_sjf_MQ.txt";
+       titulo = " / SJF Multi-Queue Algorithm /";
+
+
+       System.out.println("Se corre el algoritmo en modo multicola");
+
+     } else {
+
+      cola_actual = cola;
+      actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+      ordenarVector(actual);
+      ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_sjf.txt";
+      titulo = " / SJF NA Algorithm /";
+
+      System.out.println("Se corre el algoritmo con una sola cola");
+
+     }
+    
     File f = new File(ruta);
     FileWriter fw = new FileWriter(f);
     PrintWriter pw = new PrintWriter(fw);
 
-    pw.println(" / SJF Algorithm /");
+    pw.println(titulo);
     pw.println(" ");
     pw.println(" == Ready Queue: ==");
   	     
@@ -316,16 +337,38 @@ public class MyScheduler {
       
     if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
     
-    cola_actual = cola;
+    // Analizamos si debemos trabajar multicolas o se ingreso solo una cola
+     if (cola > 1) {
 
-    Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
-    ordenarVector(actual);
-    String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_priority.txt";
+       vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
+       vectorUnico = crearColaUnica(cola); // Guardamos el vector unico recibido del metodo
+
+       actual = vectorUnico; // Guardamos el vectorUnico en el Vector actual
+       ordenarVector(actual); // Se ordena el Vector que contiene la cola
+       cola_actual = 1;
+       ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_priority_MQ.txt";
+       titulo = " / Priority Multi-Queue Algorithm /";
+
+
+       System.out.println("Se corre el algoritmo en modo multicola");
+
+     } else {
+
+      cola_actual = cola;
+      actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+      ordenarVector(actual);
+      ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_priority.txt";
+      titulo = " / Priority NA Algorithm /";
+
+      System.out.println("Se corre el algoritmo con una sola cola");
+
+     }
+    
     File f = new File(ruta);
     FileWriter fw = new FileWriter(f);
     PrintWriter pw = new PrintWriter(fw);
 
-    pw.println(" / Priority Algorithm /");
+    pw.println(titulo);
     pw.println(" ");
     pw.println(" == Ready Queue: ==");
 
@@ -418,16 +461,38 @@ public class MyScheduler {
       
     if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
     
-    cola_actual = cola;
+     // Analizamos si debemos trabajar multicolas o se ingreso solo una cola
+     if (cola > 1) {
 
-    Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
-    ordenarVector(actual);
-    String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_rr.txt";
+       vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
+       vectorUnico = crearColaUnica(cola); // Guardamos el vector unico recibido del metodo
+
+       actual = vectorUnico; // Guardamos el vectorUnico en el Vector actual
+       ordenarVector(actual); // Se ordena el Vector que contiene la cola
+       cola_actual = 1;
+       ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_rr_MQ.txt";
+       titulo = " / Round Robin Multi-Queue Algorithm /";
+
+
+       System.out.println("Se corre el algoritmo en modo multicola");
+
+     } else {
+
+      cola_actual = cola;
+      actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+      ordenarVector(actual);
+      ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_rr.txt";
+      titulo = " / Round Robin Algorithm /";
+
+      System.out.println("Se corre el algoritmo con una sola cola");
+
+     }
+
     File f = new File(ruta);
     FileWriter fw = new FileWriter(f);
     PrintWriter pw = new PrintWriter(fw);
 
-    pw.println(" / Round Robin Algorithm /");
+    pw.println(titulo);
     pw.println(" ");
     pw.println(" == Ready Queue: ==");
 

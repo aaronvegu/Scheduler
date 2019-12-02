@@ -1,4 +1,4 @@
- / Priority Algorithm /
+ / Priority NA Algorithm /
  
  == Ready Queue: ==
 q1:
