@@ -23,7 +23,8 @@ public class MyScheduler {
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
     //fcfs(1, 1);
     //sjf(1,1);
-    priority(1,1);
+    //priority(1,1);
+    rr(1,1);
    }
 
   private void leerDatos() throws Exception { 
@@ -178,11 +179,7 @@ public class MyScheduler {
        pw.println("----- END OF ALGORITHM -----");
 
        fw.close();
-       pw.close();
-       //int tiempo_total = (int) (tiempo_s + tiempo_requerido);
-       //System.out.println("tiempo requerido: " + tiempo_total ); 
-       //System.out.println("Quantums requeridos: " + tiempo_requerido);
-       
+       pw.close();       
   }
   
   // SJF Algorithm
@@ -384,6 +381,90 @@ public class MyScheduler {
     fw.close();
     pw.close();
 
+
+  }
+ 
+  // Round Robin Algorithm
+  private void rr(int cola, int procesadores) throws Exception {
+
+    // Excepciones
+    if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
+      
+    if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
+    
+    cola_actual = cola;
+
+    Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+    ordenarVector(actual);
+    String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_rr.txt";
+    File f = new File(ruta);
+    FileWriter fw = new FileWriter(f);
+    PrintWriter pw = new PrintWriter(fw);
+
+    pw.println(" / Round Robin Algorithm /");
+    pw.println(" ");
+    pw.println(" == Ready Queue: ==");
+
+    pw.println("q" + cola_actual + ":");
+    float tiempo_actual = 0f;
+    float tiempo_requerido = 0f;
+       
+    for(int i = 0; i < actual.size(); i++) {
+      Proceso p = (Proceso) actual.elementAt(i);
+      tiempo_requerido += p.getRequired();
+      tiempo_requerido += context_change;
+      pw.println(p.toString());
+    }
+
+    pw.println(" == End of Queue ==");
+    pw.println(" ");
+
+    float quantums = 0f;
+    int index = 0;
+    int procesoesperado = 0;
+    int tiempo_s = 0;
+    float tiempoInicio = 0;
+    int time = 0;
+    int bandera = 0;
+
+   Proceso primerProceso = (Proceso) actual.elementAt(0);
+   tiempoInicio = primerProceso.getArrival();
+   tiempoInicio += (tiempoInicio * context_change);
+
+   while(time <= tiempo_requerido) {
+
+    for (int i = 0; i < actual.size(); i++) {
+      Proceso procesoActual = (Proceso) actual.elementAt(i);
+      if ((procesoActual.getArrival() <= time) && (procesoActual.getRequired() > 0)) {
+        
+          pw.print(time + " | " + procesoActual.getID() + " | ");
+          time += context_change;
+          pw.print(time + " | X | ");
+          procesoActual.run(quantum);
+          time++;
+          bandera = 1;
+        
+      }
+    }
+
+    if (bandera == 0) {
+      pw.print(time + " | IDLE | ");
+      time += context_change;
+      pw.print(time + " | X | ");
+      time++;
+    }
+
+   }
+
+   pw.println(" ");
+   pw.println(" ");
+   pw.println("Tiempo de Inicio: " + tiempoInicio);
+   pw.println("Tiempo Final: " + (time - 1));
+   pw.println(" ");
+   pw.println("----- END OF ALGORITHM -----");
+
+   fw.close();
+   pw.close();
 
   }
   
