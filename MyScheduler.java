@@ -15,7 +15,7 @@ public class MyScheduler {
   private int cpus; //numero de cpus
   private int queues;//colas que habra
   private int cola_actual; //cola actual
-  private Vector colas, vectorUnico; //se encarga de guardar las colas de procesos.
+  private Vector colas, vectorUnico, actual; //se encarga de guardar las colas de procesos.
  
   public MyScheduler() throws Exception {
   // Leer los datos desde un archivo separado por comas
@@ -106,21 +106,30 @@ public class MyScheduler {
      if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
    
      if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
-       cola_actual = cola;
+       
+       // Analizamos si debemos trabajar multicolas o se ingreso solo una cola
+       if (cola > 1) {
 
-       vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
-       vectorUnico = crearColaUnica(cola);
+         vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
+         vectorUnico = crearColaUnica(cola); // Guardamos el vector unico recibido del metodo
 
-       Vector actual = vectorUnico;
+         actual = vectorUnico; // Guardamos el vectorUnico en el Vector actual
+         ordenarVector(actual); // Se ordena el Vector que contiene la cola
+         cola_actual = 1;
 
-       ordenarVector(actual);
+         System.out.println("Se corre el algoritmo en modo multicola");
 
-       System.out.println("Vector Actual: " + actual);
+       } else {
 
-       //Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+        cola_actual = cola;
+        actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+        ordenarVector(actual);
 
-       /*
-       ordenarVector(actual);
+        System.out.println("Se corre el algoritmo con una sola cola");
+
+       }
+
+       
        String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_fcfs.txt";
        File f = new File(ruta);
        FileWriter fw = new FileWriter(f);
@@ -190,7 +199,7 @@ public class MyScheduler {
        fw.close();
        pw.close();
 
-       */       
+              
   }
   
   // SJF Algorithm
