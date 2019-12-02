@@ -1,6 +1,6 @@
 quantum, 1
 
-context_change, 1
+context_change, 2
 
 cpu, 1
 

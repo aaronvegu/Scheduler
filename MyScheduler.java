@@ -21,10 +21,10 @@ public class MyScheduler {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    //fcfs(1, 1);
+    fcfs(1, 1);
     //sjf(1,1);
     //priority(1,1);
-    rr(1,1);
+    //rr(1,1);
    }
 
   private void leerDatos() throws Exception { 
@@ -106,8 +106,6 @@ public class MyScheduler {
    
      if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
        cola_actual = cola;
-       
-       // Codigo del profe
 
        Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
        ordenarVector(actual);
@@ -117,7 +115,7 @@ public class MyScheduler {
        PrintWriter pw = new PrintWriter(fw);
        
        pw.println(" / FCFS Algorithm /");
-        pw.println(" ");
+       pw.println(" ");
        pw.println(" == Ready Queue: ==");
 
        pw.println("q" + cola_actual + ":");
@@ -126,10 +124,9 @@ public class MyScheduler {
        
        for(int i = 0; i < actual.size(); i++) {
           Proceso p = (Proceso) actual.elementAt(i);
-          tiempo_requerido += p.getRequired();
-          tiempo_requerido += context_change;
+          tiempo_requerido += p.getRequired() + (p.getRequired() * context_change);
           pw.println(p.toString());
-       }
+        }
 
        pw.println(" == End of Queue ==");
        pw.println(" ");
@@ -411,8 +408,7 @@ public class MyScheduler {
        
     for(int i = 0; i < actual.size(); i++) {
       Proceso p = (Proceso) actual.elementAt(i);
-      tiempo_requerido += p.getRequired();
-      tiempo_requerido += context_change;
+      tiempo_requerido += p.getRequired() + (p.getRequired() * context_change);
       pw.println(p.toString());
     }
 
