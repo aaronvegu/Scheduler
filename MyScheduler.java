@@ -16,12 +16,13 @@ public class MyScheduler {
   private int queues;//colas que habra
   private int cola_actual; //cola actual
   private Vector colas, vectorUnico, actual; //se encarga de guardar las colas de procesos.
+  private String ruta, titulo;
  
   public MyScheduler() throws Exception {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    fcfs(2, 1);
+    fcfs(1, 1);
     //sjf(1,1);
     //priority(1,1);
     //rr(1,1);
@@ -116,6 +117,9 @@ public class MyScheduler {
          actual = vectorUnico; // Guardamos el vectorUnico en el Vector actual
          ordenarVector(actual); // Se ordena el Vector que contiene la cola
          cola_actual = 1;
+         ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_fcfs_MQ.txt";
+         titulo = " / FCFS Multi-Queue Algorithm /";
+
 
          System.out.println("Se corre el algoritmo en modo multicola");
 
@@ -124,18 +128,20 @@ public class MyScheduler {
         cola_actual = cola;
         actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
         ordenarVector(actual);
+        ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_fcfs.txt";
+        titulo = " / FCFS NA Algorithm /";
 
         System.out.println("Se corre el algoritmo con una sola cola");
 
        }
 
        
-       String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_fcfs.txt";
+       
        File f = new File(ruta);
        FileWriter fw = new FileWriter(f);
        PrintWriter pw = new PrintWriter(fw);
        
-       pw.println(" / FCFS Algorithm /");
+       pw.println(titulo);
        pw.println(" ");
        pw.println(" == Ready Queue: ==");
 
