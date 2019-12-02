@@ -12,7 +12,7 @@ public class MyScheduler {
   private BufferedReader br;// espacio donde se guardan los datos (temporalmente)
   private float quantum = 0; //es el tiempo que se le da un proceso para ejecutarse 
   private float context_change; //variables
-  private int cpus; //numer de cpus
+  private int cpus; //numero de cpus
   private int queues;//colas que habra
   private int cola_actual; //cola actual
   private Vector colas; //se encarga de guardar las colas de procesos.
@@ -21,8 +21,8 @@ public class MyScheduler {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    fcfs(1, 1);
-    //sjf(1,1);
+    //fcfs(1, 1);
+    sjf(1,1);
    }
 
   private void leerDatos() throws Exception { 
@@ -94,7 +94,7 @@ public class MyScheduler {
     }
     fr.close();
     br.close();
-    System.out.println("Leidas " + contador + " lineas de datos!");
+    System.out.println("¡Leidas " + contador + " lineas de datos!");
   }
 
   // FCFS Algorithm   
@@ -114,6 +114,8 @@ public class MyScheduler {
        FileWriter fw = new FileWriter(f);
        PrintWriter pw = new PrintWriter(fw);
        
+       System.out.println(" / FCFS Algorithm /");
+
        System.out.println("q" + cola_actual + ":");
        float tiempo_actual = 0f;
        float tiempo_requerido = 0f;
@@ -161,62 +163,106 @@ public class MyScheduler {
        int tiempo_total = (int) (tiempo_s + tiempo_requerido);
        System.out.println("tiempo requerido: " + tiempo_total ); 
        System.out.println("Quantums requeridos: " + tiempo_requerido);
+       System.out.println("----- END OF ALGORITHM -----");
   }
   
   // SJF Algorithm
   private void sjf(int cola, int procesadores) throws Exception {
   	  
-     // Excepciones
-  	 if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
+    // Excepciones
+  	if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
   	  
-  	 if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
-  	     cola_actual = cola;
+    if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
+  	
+    cola_actual = cola;
 
-         System.out.println("Cola actual: " + cola_actual);
-
-  	     Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
-         ordenarVector(actual);
-  	     String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_sjf.txt";
-  	     File f = new File(ruta);
-  	     FileWriter fw = new FileWriter(f);
-  	     PrintWriter pw = new PrintWriter(fw);
+  	Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+    ordenarVector(actual);
+    String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_sjf.txt";
+    File f = new File(ruta);
+    FileWriter fw = new FileWriter(f);
+    PrintWriter pw = new PrintWriter(fw);
   	     
-  	     System.out.println("q" + cola_actual + ":");
-  	     float tiempo_actual = 0f;
-  	     float tiempo_requerido = 0f;
+    System.out.println("q" + cola_actual + ":");
+    float tiempo_actual = 0f;
+    float ejecucionTotal = 0f;
 
-  	     
-  	     for(int i = 0; i < actual.size(); i++) {
-  	         Proceso p = (Proceso) actual.elementAt(i);
-  	         tiempo_requerido = tiempo_requerido + p.getRequired();
-  	         System.out.println(p.toString());
-  	      }
+    for(int i = 0; i < actual.size(); i++) {
+      Proceso p = (Proceso) actual.elementAt(i);
+      ejecucionTotal = ejecucionTotal + p.getRequired();
+      System.out.println(p.toString());
+    }
+
+    // Obtencion del tiempo de inicio de ejecucion
+    Proceso primerProceso = (Proceso) actual.elementAt(0); // Obtenemos el primer proceso de la cola
+    float tiempoInicio = primerProceso.getArrival(); // Y como la cola esta ordenada segun llegada del proceso, el arrival del primer proceso en cola sera el tiempo de inicio de ejecucion
+
+    // Declaracion de variables a usar en el core del algoritmo
+    int st = 0, pt = 0, pf = 0, indice = 0; // Starting Time, Procesos Totales y Procesos Finalizados
 
 
-  	      float quantums=0f;
-  	      int index=0;
-  	      int procesoesperado=0;
-  	      int tiempo_s= 0;
+    pt = actual.size(); // Obtenemos el numero total de procesos en cola
+    
+    pw.println(" / SFJ Algorithm /");
+
+
+    while(true) {
+
+      int indicador = pt; // El indicador se iguala al numero de procesos de la cola
+      int min = 999; // Y el valor minimo actual es un numero grande, para que el primer proceso en entrar sea siempre el que tiene minimo trabajo
+
+      if (pf == pt) // Si procesos finalizados = procesos totales, romper el ciclo
+        break;
+
+      for (int i = 0; i < actual.size(); i++) { // Recorremos la cola de procesos
+
+        Proceso procesoActual = (Proceso) actual.elementAt(i); // Obtenemos el proceso actual de la cola
+
+        if ((procesoActual.getArrival() <= st) && (procesoActual.getRequired() > 0) && (procesoActual.getRequired() < min)) {
+          min = (int) procesoActual.getRequired(); // El trabajo minimo ahora es el required del proceso actual
+          indicador = i; // Al guardar el index del proceso que entro en la condicion en el indicador, estamos indicando que proceso debe ser ejecutado
+        }
+
+      }
+
+      if (indicador == pt) { // Si el indicador es igual a pt, significa que no entro ningun proceso, por lo tanto marcamos un IDLE y aumentamos el tiempo
+
+        pw.print(st + " | IDLE | "); // Indicamos el IDLE en cpu
+        st += context_change;
+        pw.print(st + " | X | ");
+        st++; // Aumentamos el tiempo
+
+      } else { // De tener proceso a ejecutar, pasamos a su ejecucion:
+
+        Proceso procesoARecorrer = (Proceso) actual.elementAt(indicador); // Se instancia el proceso a recorrer
+
+        while(procesoARecorrer.getRequired() > 0) { // Mientras el proceso aun tenga recursos por ejecutar:
+          //int tiempoContexto = st + context_change;
+          pw.print(st + " | " + procesoARecorrer.getID() + " | "); // Imprimos la ejecucion
+          st += context_change;
+          pw.print(st + " | X | "); // Imprimimos el cambio de contexto
+          procesoARecorrer.run(quantum); // Hacemos la ejecucion del proceso
+          st++;
+        }
+
+        pf++; // Indicamos la finalizacion del proceso
+
+      }
+         
+    }
+
+    pw.println(" | END |");
+
+    pw.println("Tiempo de Inicio: " + tiempoInicio);
+    pw.println("Tiempo esperado de ejecución: " + (ejecucionTotal + (context_change * (ejecucionTotal))));
+    pw.println("Tiempo en ejecucion: " + (st - 1));
+    pw.println("----- END OF ALGORITHM -----");
   	      
-  	      for(float t = 0; t <= tiempo_requerido; t++) {  // Mientras haya tiempo de ejecución
-
-            // Se creara un objeto de tipo Proceso segun se va recorriendo el vector de procesos Actual (Vector)
-            Proceso procesoActual = (Proceso) actual.elementAt((int) index);
-            // Si el proceso ya arrivo y aun necesita recursos
-            if (procesoActual.getArrival() <= t && procesoActual.getRequired() > 0) {
-              System.out.println(t + " | " + procesoActual.getID()); // Se imprime la ejecucion del proceso
-              procesoActual.run(quantum); // Se ejecuta y resta el recurso ejecutado al proceso
-            }
-            if (procesoActual.getRequired() == 0) // Si el proceso ya no requiere mas recursos, se cambia de proceso
-              index++; 
-  	      }
-  	      
-  	      fw.close();
-          pw.close();
-  	      int tiempo_total = (int) (tiempo_s + tiempo_requerido);
-  	      System.out.println("tiempo requerido: " + tiempo_total); 
-  	      System.out.println("Quantums requeridos: " + tiempo_requerido);
+  	fw.close();
+    pw.close();
   }
+
+
  
   
   public void ordenarVector(Vector actual) {
@@ -249,5 +295,4 @@ public class MyScheduler {
    
    }
 
- 
 }
