@@ -115,56 +115,74 @@ public class MyScheduler {
        FileWriter fw = new FileWriter(f);
        PrintWriter pw = new PrintWriter(fw);
        
-       System.out.println(" / FCFS Algorithm /");
+       pw.println(" / FCFS Algorithm /");
+        pw.println(" ");
+       pw.println(" == Ready Queue: ==");
 
-       System.out.println("q" + cola_actual + ":");
+       pw.println("q" + cola_actual + ":");
        float tiempo_actual = 0f;
        float tiempo_requerido = 0f;
        
        for(int i = 0; i < actual.size(); i++) {
           Proceso p = (Proceso) actual.elementAt(i);
-          tiempo_requerido = tiempo_requerido + p.getRequired();
-          System.out.println(p.toString());
+          tiempo_requerido += p.getRequired();
+          tiempo_requerido += context_change;
+          pw.println(p.toString());
        }
-       
+
+       pw.println(" == End of Queue ==");
+       pw.println(" ");
+
        float quantums = 0f;
        int index = 0;
        int procesoesperado = 0;
        int tiempo_s = 0;
-       
-       for(float i = 0; i <= tiempo_requerido; i++) {
-      	 
-      	tiempo_s = (int) (tiempo_s + context_change);
-      	 
-      	 Proceso proceso1 = (Proceso) actual.elementAt(index);	 
-      	 if(i == 0) pw.print("0|idle");
-      	 
-      	 else if(i%quantum==0) {	
-      		 quantums += quantum + context_change;
-      		 
-      	       pw.print("\n"+quantums);
-      	       procesoesperado++;
-      	       	 
-      	 }
+       float tiempoInicio = 0;
+       int time = 0;
+       int bandera = 0;
 
-      	 if(index!=procesoesperado) {
-      	 proceso1.setRequierd(proceso1.getRequired()-1);
-      	 pw.print("|"+proceso1.getID()+"|X|");
-      	 
-      	 }
-      	 
-      	 if(proceso1.getRequired()==0) {
-      		 index++;
-      		 }
-      	
+       Proceso primerProceso = (Proceso) actual.elementAt(0);
+       tiempoInicio = primerProceso.getArrival();
+       tiempoInicio += (tiempoInicio * context_change);
+
+       while(time <= tiempo_requerido) {
+
+        for (int i = 0; i < actual.size(); i++) {
+          Proceso procesoActual = (Proceso) actual.elementAt(i);
+          if ((procesoActual.getArrival() <= time) && (procesoActual.getRequired() > 0)) {
+            while(procesoActual.getRequired() > 0) {
+              pw.print(time + " | " + procesoActual.getID() + " | ");
+              time += context_change;
+              pw.print(time + " | X | ");
+              procesoActual.run(quantum);
+              time++;
+              bandera = 1;
+            }
+          }
+        }
+
+        if (bandera == 0) {
+          pw.print(time + " | IDLE | ");
+          time += context_change;
+          pw.print(time + " | X | ");
+          time++;
+        }
+
        }
-       
+
+       pw.println(" ");
+       pw.println(" ");
+       pw.println("Tiempo de Inicio: " + tiempoInicio);
+       pw.println("Tiempo Final: " + (time - 1));
+       pw.println(" ");
+       pw.println("----- END OF ALGORITHM -----");
+
        fw.close();
        pw.close();
-       int tiempo_total = (int) (tiempo_s + tiempo_requerido);
-       System.out.println("tiempo requerido: " + tiempo_total ); 
-       System.out.println("Quantums requeridos: " + tiempo_requerido);
-       System.out.println("----- END OF ALGORITHM -----");
+       //int tiempo_total = (int) (tiempo_s + tiempo_requerido);
+       //System.out.println("tiempo requerido: " + tiempo_total ); 
+       //System.out.println("Quantums requeridos: " + tiempo_requerido);
+       
   }
   
   // SJF Algorithm
@@ -183,16 +201,23 @@ public class MyScheduler {
     File f = new File(ruta);
     FileWriter fw = new FileWriter(f);
     PrintWriter pw = new PrintWriter(fw);
+
+    pw.println(" / SJF Algorithm /");
+    pw.println(" ");
+    pw.println(" == Ready Queue: ==");
   	     
-    System.out.println("q" + cola_actual + ":");
+    pw.println("q" + cola_actual + ":");
     float tiempo_actual = 0f;
     float ejecucionTotal = 0f;
 
     for(int i = 0; i < actual.size(); i++) {
       Proceso p = (Proceso) actual.elementAt(i);
       ejecucionTotal = ejecucionTotal + p.getRequired();
-      System.out.println(p.toString());
+      pw.println(p.toString());
     }
+
+    pw.println(" == End of Queue ==");
+    pw.println(" ");
 
     // Obtencion del tiempo de inicio de ejecucion
     Proceso primerProceso = (Proceso) actual.elementAt(0); // Obtenemos el primer proceso de la cola
@@ -203,9 +228,6 @@ public class MyScheduler {
 
 
     pt = actual.size(); // Obtenemos el numero total de procesos en cola
-    
-    pw.println(" / SFJ Algorithm /");
-
 
     while(true) {
 
@@ -253,10 +275,10 @@ public class MyScheduler {
     }
 
     pw.println(" | END |");
-
+    pw.println(" ");
     pw.println("Tiempo de Inicio: " + tiempoInicio);
-    pw.println("Tiempo esperado de ejecución: " + (ejecucionTotal + (context_change * (ejecucionTotal))));
-    pw.println("Tiempo en ejecucion: " + (st - 1));
+    pw.println("Tiempo Final: " + (st - 1));
+    pw.println(" ");
     pw.println("----- END OF ALGORITHM -----");
   	      
   	fw.close();
@@ -280,15 +302,22 @@ public class MyScheduler {
     FileWriter fw = new FileWriter(f);
     PrintWriter pw = new PrintWriter(fw);
 
-    System.out.println("q" + cola_actual + ":");
+    pw.println(" / Priority Algorithm /");
+    pw.println(" ");
+    pw.println(" == Ready Queue: ==");
+
+    pw.println("q" + cola_actual + ":");
     float tiempo_actual = 0f;
     float ejecucionTotal = 0f;
 
     for(int i = 0; i < actual.size(); i++) {
       Proceso p = (Proceso) actual.elementAt(i);
       ejecucionTotal = ejecucionTotal + p.getRequired();
-      System.out.println(p.toString());
+      pw.println(p.toString());
     }
+
+    pw.println(" == End of Queue ==");
+    pw.println(" ");
 
     // Obtencion del tiempo de inicio de ejecucion
     Proceso primerProceso = (Proceso) actual.elementAt(0); // Obtenemos el primer proceso de la cola
@@ -299,9 +328,6 @@ public class MyScheduler {
 
 
     pt = actual.size(); // Obtenemos el numero total de procesos en cola
-    
-    pw.println(" / Priority Algorithm /");
-
 
     while(true) {
 
@@ -349,10 +375,10 @@ public class MyScheduler {
     }
 
     pw.println(" | END |");
-
+    pw.println(" ");
     pw.println("Tiempo de Inicio: " + tiempoInicio);
-    pw.println("Tiempo esperado de ejecución: " + (ejecucionTotal + (context_change * (ejecucionTotal))));
-    pw.println("Tiempo en ejecucion: " + (st - 1));
+    pw.println("Tiempo Final: " + (st - 1));
+    pw.println(" ");
     pw.println("----- END OF ALGORITHM -----");
           
     fw.close();
@@ -360,7 +386,6 @@ public class MyScheduler {
 
 
   }
- 
   
   public void ordenarVector(Vector actual) {
   	  
