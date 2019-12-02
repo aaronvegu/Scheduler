@@ -15,16 +15,17 @@ public class MyScheduler {
   private int cpus; //numero de cpus
   private int queues;//colas que habra
   private int cola_actual; //cola actual
-  private Vector colas; //se encarga de guardar las colas de procesos.
+  private Vector colas, vectorUnico; //se encarga de guardar las colas de procesos.
  
   public MyScheduler() throws Exception {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    fcfs(1, 1);
+    fcfs(2, 1);
     //sjf(1,1);
     //priority(1,1);
     //rr(1,1);
+    //crearColaUnica(3);
    }
 
   private void leerDatos() throws Exception { 
@@ -107,7 +108,18 @@ public class MyScheduler {
      if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
        cola_actual = cola;
 
-       Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+       vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
+       vectorUnico = crearColaUnica(cola);
+
+       Vector actual = vectorUnico;
+
+       ordenarVector(actual);
+
+       System.out.println("Vector Actual: " + actual);
+
+       //Vector actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+
+       /*
        ordenarVector(actual);
        String ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_fcfs.txt";
        File f = new File(ruta);
@@ -176,7 +188,9 @@ public class MyScheduler {
        pw.println("----- END OF ALGORITHM -----");
 
        fw.close();
-       pw.close();       
+       pw.close();
+
+       */       
   }
   
   // SJF Algorithm
@@ -464,6 +478,7 @@ public class MyScheduler {
 
   }
   
+  // Ordenar vector
   public void ordenarVector(Vector actual) {
   	  
   	     for(int i = 1; i <= actual.size(); i++) {
@@ -480,6 +495,30 @@ public class MyScheduler {
   	    		 	 
   	    	 }
   	     }	     
+  }
+
+  // Creador de cola unica para hacer uso de Multiqueue Scheduling
+  private Vector crearColaUnica(int cola) throws Exception {
+
+    if (cola > queues) throw new Exception("Error: Las cosas no coinciden con las colas del archivo");
+    if (cola < 2) throw new Exception("Error: Debes agregar dos o mas colas");
+
+    Vector recipiente = new Vector(); // Instanciamos el vector donde se guardaran todas las colas
+      
+    for (int i = 0; i < colas.size(); i++) { // Recorremos el arreglo con las colas leidas del archivo
+      Vector vectorActual = (Vector) colas.elementAt(i);
+      
+      for (int j = 0; j < vectorActual.size(); j++) { // Con la cola actual, se recorre segun su longitud
+        recipiente.add(vectorActual.elementAt(j)); // Y se agregan sus procesos al vector unico
+      }
+      
+    }
+
+    System.out.println("¡Vector unico creado!");
+    System.out.println("Vector: " + recipiente);
+    
+    return recipiente;
+
   }
   
   
