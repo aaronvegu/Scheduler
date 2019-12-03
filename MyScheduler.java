@@ -22,10 +22,13 @@ public class MyScheduler {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    fcfs(1, 3);
+    //fcfs(1, 1);
     //sjf(1,1);
     //priority(1,1);
     //rr(1,1);
+
+    fcfsmcpu(1,2);
+
    }
 
   private void leerDatos() throws Exception { 
@@ -107,10 +110,10 @@ public class MyScheduler {
    
      if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
 
-     if(cpus > 2) throw new Exception("Error: Numero de CPU's no soportado, intente con 2");
+     if(cpus > 2 || procesadores > 2) throw new Exception("Error: usted necesita el metodo fcfsmcpu() para correrlo con Multi-CPU's");
        
        // Analizamos si debemos trabajar multicolas o se ingreso solo una cola
-       if (cola > 1) {
+       if (cola > 1) { // MODO MULTICOLA
 
          vectorUnico = new Vector(); // Instanciamos el Vector Unico que contendra todas las colas
          vectorUnico = crearColaUnica(cola); // Guardamos el vector unico recibido del metodo
@@ -124,7 +127,7 @@ public class MyScheduler {
 
          System.out.println("Se corre el algoritmo en modo multicola");
 
-       } else {
+       } else { // MODO ESTANDAR
 
         cola_actual = cola;
         actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
@@ -136,10 +139,6 @@ public class MyScheduler {
 
        }
 
-       ordenarCpus(actual);
-       System.out.println("Cola de procesos del CPU0: " + cpu0);
-       System.out.println("Cola de procesos del CPU1: " + cpu1);
-       
        File f = new File(ruta);
        FileWriter fw = new FileWriter(f);
        PrintWriter pw = new PrintWriter(fw);
@@ -211,6 +210,154 @@ public class MyScheduler {
               
   }
   
+  // FCFS Multi-CPU's Algorithm   
+  private void fcfsmcpu(int cola, int procesadores) throws Exception {
+    
+     if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
+   
+     if(procesadores > cpus || procesadores != cpus) throw new Exception("Error: Numero de procesadores invalido!");
+
+     if(cpus > 2 || procesadores > 2) throw new Exception("Error: Numero de CPU's no soportado, intente con 2");
+
+      cola_actual = cola;
+      actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+      ordenarVector(actual);
+      ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_fcfs_mcpu.txt";
+      titulo = " / FCFS Multi-CPU's Algorithm /";
+
+      System.out.println("Se corre el algoritmo en modo Multi-CPU's");
+
+       File f = new File(ruta);
+       FileWriter fw = new FileWriter(f);
+       PrintWriter pw = new PrintWriter(fw);
+       
+       float tiempo_actual = 0f;
+       float tiempo_requerido = 0f;
+
+       // Creamos nuestras colas por CPU
+       ordenarCpus(actual);
+
+       pw.println(titulo);
+       pw.println(" ");
+       pw.println(" == Ready Queue: ==");
+       pw.println(" ");
+
+       float extend0 = 0, extend1 = 0, tiempoTotal = 0;
+       // CPU0
+       pw.println("CPU0:");
+       for (int i = 0; i < cpu0.size(); i++) {
+         Proceso p = (Proceso) cpu0.elementAt(i);
+         extend0 += p.getRequired() + (p.getRequired() * context_change);
+         pw.println(p.toString());
+       }
+       pw.println(" ");
+
+       // CPU1
+       pw.println("CPU1:");
+       for (int i = 0; i < cpu1.size(); i++) {
+         Proceso p = (Proceso) cpu1.elementAt(i);
+         extend1 += p.getRequired() + (p.getRequired() * context_change);
+         pw.println(p.toString());
+       }
+       pw.println(" ");
+       pw.println(" == End of Queue ==");
+       pw.println(" ");
+       
+       //pw.println("Tiempo Ejecucion CPU0: " + extend0);
+       //pw.println("Tiempo Ejecucion CPU1: " + extend1);
+
+       // Obtenemos la cola de CPU con ejecucion mas extensa
+       if (extend0 >= extend1) tiempo_requerido = extend0;
+       else tiempo_requerido = extend1;
+
+       tiempoTotal = (extend0 + extend1);
+
+       float quantums = 0f;
+       int index = 0;
+       int procesoesperado = 0;
+       int tiempo_s = 0;
+       float tiempoInicio = 0;
+       int timeGlobal = 0, time0 = 0, time1 = 0;
+       int bandera0 = 0, bandera1 = 0;
+
+       Proceso primerProceso = (Proceso) cpu0.elementAt(0);
+       tiempoInicio = primerProceso.getArrival();
+       tiempoInicio += (tiempoInicio * context_change);
+
+       // EJECUCION CPU0
+       pw.println(" == TIMELINE CPU0 == ");
+
+       while(time0 <= extend0) {
+
+        for (int i = 0; i < cpu0.size(); i++) {
+          Proceso procesoActual0 = (Proceso) cpu0.elementAt(i);
+          if ((procesoActual0.getArrival() <= time0) && (procesoActual0.getRequired() > 0)) {
+            while(procesoActual0.getRequired() > 0) {
+              pw.print(time0 + " | " + procesoActual0.getID() + " | ");
+              time0 += context_change;
+              pw.print(time0 + " | X | ");
+              procesoActual0.run(quantum);
+              time0++;
+              bandera0 = 1;
+            }
+          }
+        }
+
+        if (bandera0 == 0) {
+          pw.print(time0 + " | IDLE | ");
+          time0 += context_change;
+          pw.print(time0 + " | X | ");
+          time0++;
+        }
+
+      }
+      pw.println(" ");
+      pw.println(" == END OF TIMELINE CPU0 == ");
+      pw.println(" ");
+
+      // EJECUCION CPU1
+      pw.println(" == TIMELINE CPU1 == ");
+
+      while(time1 <= extend1) {
+
+        for (int i = 0; i < cpu1.size(); i++) {
+          Proceso procesoActual1 = (Proceso) cpu1.elementAt(i);
+          if ((procesoActual1.getArrival() <= time1) && (procesoActual1.getRequired() > 0)) {
+            while(procesoActual1.getRequired() > 0) {
+              pw.print(time1 + " | " + procesoActual1.getID() + " | ");
+              time1 += context_change;
+              pw.print(time1 + " | X | ");
+              procesoActual1.run(quantum);
+              time1++;
+              bandera1 = 1;
+            }
+          }
+        }
+
+        if (bandera1 == 0) {
+          pw.print(time1 + " | IDLE | ");
+          time1 += context_change;
+          pw.print(time1 + " | X | ");
+          time1++;
+        }
+
+      }
+      pw.println(" ");
+      pw.println(" == END OF TIMELINE CPU1 == ");
+
+      timeGlobal = (time0 + time1);
+
+       pw.println(" ");
+       pw.println(" ");
+       pw.println("Tiempo de Inicio: " + tiempoInicio);
+       pw.println("Tiempo Final: " + (tiempo_requerido));
+       pw.println(" ");
+       pw.println("----- END OF ALGORITHM -----");
+
+       fw.close();
+       pw.close();           
+  }
+
   // SJF Algorithm
   private void sjf(int cola, int procesadores) throws Exception {
   	  
@@ -614,7 +761,7 @@ public class MyScheduler {
     float t = 0, d0 = 0, d1 = 0;
     int pf = 0;
 
-    while(pf <= colaDeProcesos.size()) {
+    while(pf < colaDeProcesos.size()) {
 
       for (int i = 0; i < colaDeProcesos.size(); i++) { // Recorremos la cola de procesos
 
