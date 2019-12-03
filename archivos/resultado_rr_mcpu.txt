@@ -1,0 +1,29 @@
+ / Round Robin Multi-CPU's Algorithm /
+ 
+ == Ready Queue: ==
+ 
+CPU0:
+p2, 1, 4.0, 2
+p3, 3, 6.0, 3
+p4, 5, 1.0, 1
+p5, 7, 4.0, 1
+ 
+CPU1:
+p1, 2, 3.0, 1
+p0, 4, 10.0, 3
+ 
+ == End of Queue ==
+ 
+ == TIMELINE CPU0 == 
+0 | IDLE | 0 | X | 1 | p2 | 1 | X | 2 | p2 | 2 | X | 3 | p3 | 3 | X | 4 | p2 | 4 | X | 5 | p3 | 5 | X | 6 | p4 | 6 | X | 7 | p5 | 7 | X | 8 | p2 | 8 | X | 9 | p3 | 9 | X | 10 | p5 | 10 | X | 11 | p3 | 11 | X | 12 | p5 | 12 | X | 13 | p3 | 13 | X | 14 | p5 | 14 | X | 15 | p3 | 15 | X |  
+ == END OF TIMELINE CPU0 == 
+ 
+ == TIMELINE CPU1 == 
+0 | IDLE | 0 | X | 1 | IDLE | 1 | X | 2 | p1 | 2 | X | 3 | p1 | 3 | X | 4 | p0 | 4 | X | 5 | p1 | 5 | X | 6 | p0 | 6 | X | 7 | p0 | 7 | X | 8 | p0 | 8 | X | 9 | p0 | 9 | X | 10 | p0 | 10 | X | 11 | p0 | 11 | X | 12 | p0 | 12 | X | 13 | p0 | 13 | X |  
+ == END OF TIMELINE CPU1 == 
+ 
+ 
+Tiempo de Inicio: 1.0
+Tiempo Final: 15.0
+ 
+----- END OF ALGORITHM -----
