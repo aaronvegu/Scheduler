@@ -27,7 +27,8 @@ public class MyScheduler {
     //priority(1,1);
     //rr(1,1);
 
-    fcfsmcpu(1,2);
+    //fcfsmcpu(1,2);
+    sjfmcpu(1,2);
 
    }
 
@@ -478,6 +479,198 @@ public class MyScheduler {
   	      
   	fw.close();
     pw.close();
+  }
+
+  // SJF Multi-CPU's Algorithm
+  private void sjfmcpu(int cola, int procesadores) throws Exception {
+      
+    // Excepciones
+    if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
+      
+    if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
+
+    if(cpus > 2 || procesadores > 2) throw new Exception("Error: Numero de CPU's no soportado, intente con 2");
+    
+    cola_actual = cola;
+    actual = (Vector) ((Vector) colas.elementAt(cola_actual-1)).clone();
+    ordenarVector(actual);
+    ruta = "/Users/aaronvegu/Desktop/ms/Scheduler/archivos/resultado_sjf_mcpu.txt";
+    titulo = " / SJF Multi-CPU's Algorithm /";
+
+    System.out.println("Se corre el algoritmo en modo Multi-CPU's");
+
+    // Creamos nuestras colas por CPU
+    ordenarCpus(actual);
+    
+    File f = new File(ruta);
+    FileWriter fw = new FileWriter(f);
+    PrintWriter pw = new PrintWriter(fw);
+
+    float tiempo_requerido = 0f;
+    float tiempoInicio = 0f;
+
+    pw.println(titulo);
+    pw.println(" ");
+    pw.println(" == Ready Queue: ==");
+    pw.println(" ");
+
+    float extend0 = 0, extend1 = 0, tiempoTotal = 0;
+    // CPU0
+    pw.println("CPU0:");
+    for (int i = 0; i < cpu0.size(); i++) {
+      Proceso p = (Proceso) cpu0.elementAt(i);
+      extend0 += p.getRequired() + (p.getRequired() * context_change);
+      pw.println(p.toString());
+    }
+    pw.println(" ");
+
+    // CPU1
+    pw.println("CPU1:");
+    for (int i = 0; i < cpu1.size(); i++) {
+      Proceso p = (Proceso) cpu1.elementAt(i);
+      extend1 += p.getRequired() + (p.getRequired() * context_change);
+      pw.println(p.toString());
+    }
+    pw.println(" ");
+    pw.println(" == End of Queue ==");
+    pw.println(" ");
+     
+    //pw.println("Tiempo Ejecucion CPU0: " + extend0);
+    //pw.println("Tiempo Ejecucion CPU1: " + extend1);
+
+    // Obtenemos la cola de CPU con ejecucion mas extensa
+    if (extend0 >= extend1) tiempo_requerido = extend0;
+    else tiempo_requerido = extend1;
+
+    tiempoTotal = (extend0 + extend1);
+         
+    // Obtenemos el tiempo de inicio de ejecucion
+    Proceso primerProceso = (Proceso) cpu0.elementAt(0);
+    tiempoInicio = primerProceso.getArrival();
+    tiempoInicio += (tiempoInicio * context_change);
+
+    // Declaracion de variables a usar en el core del algoritmo
+    int st0 = 0, pt0 = 0, pf0 = 0, st1 = 0, pt1 = 0, pf1 = 0; // Starting Time, Procesos Totales y Procesos Finalizados
+
+
+    pt0 = cpu0.size(); // Obtenemos el numero total de procesos en cola del CPU0
+    pt1 = cpu1.size(); // Obtenemos el numero total de procesos en cola del CPU1
+
+    // EJECUCION CPU0
+    pw.println(" == TIMELINE CPU0 == ");
+    while(true) {
+
+      int indicador = pt0; // El indicador se iguala al numero de procesos de la cola
+      int min = 999; // Y el valor minimo actual es un numero grande, para que el primer proceso en entrar sea siempre el que tiene minimo trabajo
+
+      if (pf0 == pt0) // Si procesos finalizados = procesos totales, romper el ciclo
+        break;
+
+      for (int i = 0; i < cpu0.size(); i++) { // Recorremos la cola de procesos
+
+        Proceso procesoActual = (Proceso) cpu0.elementAt(i); // Obtenemos el proceso actual de la cola
+
+        if ((procesoActual.getArrival() <= st0) && (procesoActual.getRequired() > 0) && (procesoActual.getRequired() < min)) {
+          min = (int) procesoActual.getRequired(); // El trabajo minimo ahora es el required del proceso actual
+          indicador = i; // Al guardar el index del proceso que entro en la condicion en el indicador, estamos indicando que proceso debe ser ejecutado
+        }
+
+      }
+
+      if (indicador == pt0) { // Si el indicador es igual a pt, significa que no entro ningun proceso, por lo tanto marcamos un IDLE y aumentamos el tiempo
+
+        pw.print(st0 + " | IDLE | "); // Indicamos el IDLE en cpu
+        st0 += context_change;
+        pw.print(st0 + " | X | ");
+        st0++; // Aumentamos el tiempo
+
+      } else { // De tener proceso a ejecutar, pasamos a su ejecucion:
+
+        Proceso procesoARecorrer = (Proceso) cpu0.elementAt(indicador); // Se inst0ancia el proceso a recorrer
+
+        while(procesoARecorrer.getRequired() > 0) { // Mientras el proceso aun tenga recursos por ejecutar:
+          //int tiempoContexto = st0 + context_change;
+          pw.print(st0 + " | " + procesoARecorrer.getID() + " | "); // Imprimos la ejecucion
+          st0 += context_change;
+          pw.print(st0 + " | X | "); // Imprimimos el cambio de contexto
+          procesoARecorrer.run(quantum); // Hacemos la ejecucion del proceso
+          st0++;
+        }
+
+        pf0++; // Indicamos la finalizacion del proceso
+
+      }
+         
+    }
+
+    pw.println(" | END |");
+
+    pw.println(" ");
+    pw.println(" == END OF TIMELINE CPU0 == ");
+    pw.println(" ");
+
+    // EJECUCION CPU1
+    pw.println(" == TIMELINE CPU1 == ");
+    while(true) {
+
+      int indicador = pt1; // El indicador se iguala al numero de procesos de la cola
+      int min = 999; // Y el valor minimo actual es un numero grande, para que el primer proceso en entrar sea siempre el que tiene minimo trabajo
+
+      if (pf1 == pt1) // Si procesos finalizados = procesos totales, romper el ciclo
+        break;
+
+      for (int i = 0; i < cpu1.size(); i++) { // Recorremos la cola de procesos
+
+        Proceso procesoActual = (Proceso) cpu1.elementAt(i); // Obtenemos el proceso actual de la cola
+
+        if ((procesoActual.getArrival() <= st1) && (procesoActual.getRequired() > 0) && (procesoActual.getRequired() < min)) {
+          min = (int) procesoActual.getRequired(); // El trabajo minimo ahora es el required del proceso actual
+          indicador = i; // Al guardar el index del proceso que entro en la condicion en el indicador, estamos indicando que proceso debe ser ejecutado
+        }
+
+      }
+
+      if (indicador == pt1) { // Si el indicador es igual a pt, significa que no entro ningun proceso, por lo tanto marcamos un IDLE y aumentamos el tiempo
+
+        pw.print(st1 + " | IDLE | "); // Indicamos el IDLE en cpu
+        st1 += context_change;
+        pw.print(st1 + " | X | ");
+        st1++; // Aumentamos el tiempo
+
+      } else { // De tener proceso a ejecutar, pasamos a su ejecucion:
+
+        Proceso procesoARecorrer = (Proceso) cpu1.elementAt(indicador); // Se instancia el proceso a recorrer
+
+        while(procesoARecorrer.getRequired() > 0) { // Mientras el proceso aun tenga recursos por ejecutar:
+          //int tiempoContexto = st1 + context_change;
+          pw.print(st1 + " | " + procesoARecorrer.getID() + " | "); // Imprimos la ejecucion
+          st1 += context_change;
+          pw.print(st1 + " | X | "); // Imprimimos el cambio de contexto
+          procesoARecorrer.run(quantum); // Hacemos la ejecucion del proceso
+          st1++;
+        }
+
+        pf1++; // Indicamos la finalizacion del proceso
+
+      }
+         
+    }
+
+    pw.println(" | END |");
+
+    pw.println(" ");
+    pw.println(" == END OF TIMELINE CPU1 == ");
+    pw.println(" ");
+
+    pw.println(" ");
+    pw.println("Tiempo de Inicio: " + tiempoInicio);
+    pw.println("Tiempo Final: " + (tiempo_requerido));
+    pw.println(" ");
+    pw.println("----- END OF ALGORITHM -----");
+          
+    fw.close();
+    pw.close();
+
   }
 
   // Priority Algorithm
