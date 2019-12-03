@@ -15,17 +15,17 @@ public class MyScheduler {
   private int cpus; //numero de cpus
   private int queues;//colas que habra
   private int cola_actual; //cola actual
-  private Vector colas, vectorUnico, actual; //se encarga de guardar las colas de procesos.
+  private Vector colas, vectorUnico, actual, cpu0, cpu1; //se encarga de guardar las colas de procesos.
   private String ruta, titulo;
  
   public MyScheduler() throws Exception {
   // Leer los datos desde un archivo separado por comas
     leerDatos();
   // Ejecutar el primer algoritmo: FCFS en q0, sin desalojo
-    //fcfs(1, 1);
+    fcfs(1, 3);
     //sjf(1,1);
     //priority(1,1);
-    rr(2,1);
+    //rr(1,1);
    }
 
   private void leerDatos() throws Exception { 
@@ -106,6 +106,8 @@ public class MyScheduler {
      if(cola > queues || cola < 1) throw new Exception("Error: Numero de cola invalido!");
    
      if(procesadores > cpus) throw new Exception("Error: Numero de procesadores invalido!");
+
+     if(cpus > 2) throw new Exception("Error: Numero de CPU's no soportado, intente con 2");
        
        // Analizamos si debemos trabajar multicolas o se ingreso solo una cola
        if (cola > 1) {
@@ -134,7 +136,9 @@ public class MyScheduler {
 
        }
 
-       
+       ordenarCpus(actual);
+       System.out.println("Cola de procesos del CPU0: " + cpu0);
+       System.out.println("Cola de procesos del CPU1: " + cpu1);
        
        File f = new File(ruta);
        FileWriter fw = new FileWriter(f);
@@ -601,6 +605,68 @@ public class MyScheduler {
 
   }
   
+  // Multi-CPU's
+  private void ordenarCpus(Vector colaDeProcesos) {
+
+    cpu0 = new Vector(); // Cola de procesos del CPU0
+    cpu1 = new Vector(); // Cola de procesos del CPU1
+
+    float t = 0, d0 = 0, d1 = 0;
+    int pf = 0;
+
+    while(pf <= colaDeProcesos.size()) {
+
+      for (int i = 0; i < colaDeProcesos.size(); i++) { // Recorremos la cola de procesos
+
+        Proceso procesoActual = (Proceso) colaDeProcesos.elementAt(i); // Se instancia el proceso actual a trabajar
+
+        if (d0 <= d1) { // Cuando el CPU0 tenga mejor o igual disponibilidad que el CPU1, trabajamos sobre él:
+          // Acciones realizadas sobre el CPU0
+          if (procesoActual.getArrival() <= d0) { // Si el arrival es menor o igual a la disponibilidad del CPU0:
+
+            d0 += procesoActual.getRequired(); // Actualizamos el tiempo de diosponibilidad del proceso
+            cpu0.add(procesoActual); // Guardamos el proceso actual en la cola del CPU0
+            pf++; // Indicamos que hemos terminado el reacomodo de un proceso
+            System.out.println("Proceso " + procesoActual.getID() + " acomodado en CPU0");
+
+
+          } else { // Si el arrival del proceso no coincide con el tiempo de disponibilidad del proceso:
+
+            d0 = (procesoActual.getArrival() + procesoActual.getRequired()); // entonces a la disponibilidad le sumamos el length y arrival del proceso actual
+            cpu0.add(procesoActual); // Guardamos el proceso actual en la cola del CPU0
+            pf++; // Indicamos que hemos terminado el reacomodo de un proceso
+            System.out.println("Proceso " + procesoActual.getID() + " acomodado en CPU0");
+
+          }
+          
+        } else { // De tener mejor disponibilidad el CPU1, trabajamos sobre él
+          // Acciones realizadas sobre el CPU0
+          if (procesoActual.getArrival() <= d1) { // Si el arrival es menor o igual a la disponibilidad del CPU1:
+
+            d1 += procesoActual.getRequired(); // Actualizamos el tiempo de diosponibilidad del proceso
+            cpu1.add(procesoActual); // Guardamos el proceso actual en la cola del CPU0
+            pf++; // Indicamos que hemos terminado el reacomodo de un proceso
+            System.out.println("Proceso " + procesoActual.getID() + " acomodado en CPU1");
+
+
+          } else { // Si el arrival del proceso no coincide con el tiempo de disponibilidad del proceso:
+
+            d1 = (procesoActual.getArrival() + procesoActual.getRequired()); // entonces a la disponibilidad le sumamos el length y arrival del proceso actual
+            cpu1.add(procesoActual); // Guardamos el proceso actual en la cola del CPU0
+            pf++; // Indicamos que hemos terminado el reacomodo de un proceso
+            System.out.println("Proceso " + procesoActual.getID() + " acomodado en CPU1");
+
+          }
+
+        }
+
+      }
+
+    }
+
+    System.out.println("¡El reacomodo de procesos ha terminado!");
+
+  }
   
   public static void main(String [] args) {
     try {
